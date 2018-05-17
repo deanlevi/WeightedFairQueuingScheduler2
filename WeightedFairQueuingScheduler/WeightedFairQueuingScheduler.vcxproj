@@ -110,6 +110,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\..\Dean%27s\Documents\Visual Studio 2015\Projects\WeightedFairQueuingScheduler\WeightedFairQueuingScheduler\Main.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\Dean%27s\Documents\Visual Studio 2015\Projects\WeightedFairQueuingScheduler\WeightedFairQueuingScheduler\Queue.cpp" />
+    <ClCompile Include="..\..\..\..\..\..\Dean%27s\Documents\Visual Studio 2015\Projects\WeightedFairQueuingScheduler\WeightedFairQueuingScheduler\Scheduler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\Dean%27s\Documents\Visual Studio 2015\Projects\WeightedFairQueuingScheduler\WeightedFairQueuingScheduler\Queue.h" />
+    <ClInclude Include="..\..\..\..\..\..\Dean%27s\Documents\Visual Studio 2015\Projects\WeightedFairQueuingScheduler\WeightedFairQueuingScheduler\Scheduler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
