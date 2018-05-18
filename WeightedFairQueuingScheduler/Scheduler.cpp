@@ -1,5 +1,4 @@
 #include <fstream>
-#include <sstream>
 #include <string>
 
 #include "Scheduler.h"
@@ -10,9 +9,13 @@ using namespace std;
 SchedulerProperties Scheduler;
 
 void StartScheduler(char *argv[]);
-void ReadPacketsInCurrentTime(istream &InputFilePointer);
+void ChooseConnectionToOutput();
 
 void StartScheduler(char *argv[]) {
+	ofstream OutputFile; // todo remove
+	OutputFile.open("MyOutputMedium.txt"); // todo remove
+	OutputFile.close(); // todo remove
+
 	ifstream InputFilePointer;
 	InputFilePointer.open(argv[1]); // todo check if move to Scheduler struct
 	if (!InputFilePointer.is_open()) {
@@ -20,54 +23,88 @@ void StartScheduler(char *argv[]) {
 	}
 	while (!Scheduler.FinishedReadingInputFile) {
 		ReadPacketsInCurrentTime(InputFilePointer);
+		ChooseConnectionToOutput();
 		// todo calc packet to output
 		// todo print packet to output
 	}
+	InputFilePointer.close();
+	while (Scheduler.NumberOfPacketsInQueue > 0) {
+		ChooseConnectionToOutput();
+	}
 }
 
-void ReadPacketsInCurrentTime(istream &InputFilePointer) {
-	string CurrentLine;
-	QueueProperties NewPacketToInsert;
-	int ParameterIndex = 0;
-	while (getline(InputFilePointer, CurrentLine)) {
-		stringstream LineStream(CurrentLine);
-		while (LineStream) {
-			switch (ParameterIndex)
-			{
-			case 0:
-				LineStream >> NewPacketToInsert.Time;
-				break;
-			case 1:
-				LineStream >> NewPacketToInsert.SAdd;
-				break;
-			case 2:
-				LineStream >> NewPacketToInsert.SPort;
-				break;
-			case 3:
-				LineStream >> NewPacketToInsert.Dadd;
-				break;
-			case 4:
-				LineStream >> NewPacketToInsert.DPort;
-				break;
-			case 5:
-				LineStream >> NewPacketToInsert.Length;
-				break;
-			case 6:
-				LineStream >> NewPacketToInsert.Weight; // will be updated if exists
-				break;
-			default:
-				LineStream >> ParameterIndex; // just so LineStream will finish
-				break;
+void ChooseConnectionToOutput() {
+	double FastestTimeToDeliverOnePacket;
+	bool FirstConnectionUpdate = true, ChoseConnection = false, FirstMinimumArrivalTimeUpdate = true;
+	list <ConnectionProperties> ::iterator ConnectionIterator, ChosenConnectionIterator;
+	for (ConnectionIterator = ConnectionList.begin(); ConnectionIterator != ConnectionList.end(); ++ConnectionIterator) {
+		if (ConnectionIterator->Packets.empty()) {
+			continue;
+		}
+		// handle minimum arrival time in queue
+		if (Scheduler.NeedToUpdateMinimumArrivalTimeInQueue) {
+			if (FirstMinimumArrivalTimeUpdate) {
+				Scheduler.MinimumArrivalTimeInQueue = ConnectionIterator->Packets.front().Time;
+				Scheduler.NumberOfConnectionsWithPacketsWithMinimumArrivalTimeInQueue = 1;
+				FirstMinimumArrivalTimeUpdate = false;
 			}
-			ParameterIndex++;
+			else {
+				if (ConnectionIterator->Packets.front().Time == Scheduler.MinimumArrivalTimeInQueue) {
+					Scheduler.NumberOfConnectionsWithPacketsWithMinimumArrivalTimeInQueue += 1;
+				}
+				if (ConnectionIterator->Packets.front().Time < Scheduler.MinimumArrivalTimeInQueue) {
+					Scheduler.MinimumArrivalTimeInQueue = ConnectionIterator->Packets.front().Time;
+					Scheduler.NumberOfConnectionsWithPacketsWithMinimumArrivalTimeInQueue = 1;
+				}
+			}
 		}
-		Queue.push_back(NewPacketToInsert);
-		ParameterIndex = 0;
-		if (NewPacketToInsert.Time > Scheduler.SystemTime) {
-			break;
+
+		// handle chosen connection for output
+		if (ConnectionIterator->Packets.front().Time > Scheduler.SystemTime) { // can't schedule future packets
+			continue;
+		}
+		if (FirstConnectionUpdate) {
+			FastestTimeToDeliverOnePacket = (double) ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight;
+			ChosenConnectionIterator = ConnectionIterator;
+			FirstConnectionUpdate = false;
+			ChoseConnection = true;
+		}
+		else {
+			if ((ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight) < FastestTimeToDeliverOnePacket) {
+				FastestTimeToDeliverOnePacket = (double) ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight;
+				ChosenConnectionIterator = ConnectionIterator;
+			}
 		}
 	}
-	if (NewPacketToInsert.Time <= Scheduler.SystemTime) { // meaning reached end of file
-		Scheduler.FinishedReadingInputFile = true;
+	if (Scheduler.NeedToUpdateMinimumArrivalTimeInQueue && (Scheduler.MinimumArrivalTimeInQueue > Scheduler.SystemTime)) {
+		Scheduler.SystemTime = Scheduler.MinimumArrivalTimeInQueue;
+		Scheduler.NeedToUpdateMinimumArrivalTimeInQueue = false;
 	}
+	if (!ChoseConnection) {
+		return;
+	}
+	PacketProperties ChosenPacket = ChosenConnectionIterator->Packets.front();
+	//cout << "Time: " << Scheduler.SystemTime << ", Sadd: " << ChosenConnectionIterator->SAdd << ", Sport: " <<
+		//ChosenConnectionIterator->SPort << ", Dadd: " << ChosenConnectionIterator->Dadd << ", Dport: " << ChosenConnectionIterator->DPort <<
+		//", Length: " << ChosenPacket.Length << "\n"; // todo check print
+	cout << Scheduler.SystemTime << ": " << ChosenPacket.InputLine << "\n";
+	
+	ofstream OutputFile; // todo remove
+	OutputFile.open("MyOutputMedium.txt", ios::app); // todo remove
+	OutputFile << Scheduler.SystemTime << ": " << ChosenPacket.InputLine << "\n"; // todo remove
+	OutputFile.close(); // todo remove
+	if (Scheduler.SystemTime == 312530) {
+		int i = 1; // todo remove
+	}
+
+
+	Scheduler.SystemTime += ChosenPacket.Length;
+	if (ChosenPacket.Time == Scheduler.MinimumArrivalTimeInQueue) {
+		Scheduler.NumberOfConnectionsWithPacketsWithMinimumArrivalTimeInQueue -= 1;
+		if (Scheduler.NumberOfConnectionsWithPacketsWithMinimumArrivalTimeInQueue == 0) {
+			Scheduler.NeedToUpdateMinimumArrivalTimeInQueue = true;
+		}
+	}
+	ChosenConnectionIterator->Packets.pop_front(); // delete selected packet
+	Scheduler.NumberOfPacketsInQueue -= 1;
 }
