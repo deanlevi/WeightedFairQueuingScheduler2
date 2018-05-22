@@ -21,8 +21,14 @@ void StartScheduler(char *argv[]) {
 	if (!InputFilePointer.is_open()) {
 		// todo put error
 	}
+	Scheduler.ExtraPacket.Time = -1; // mark that not valid
 	while (!Scheduler.FinishedReadingInputFile) {
-		ReadPacketsInCurrentTime(InputFilePointer);
+		if (Scheduler.ExtraPacket.Time <= Scheduler.SystemTime || Scheduler.NumberOfPacketsInQueue == 0) {
+			if (Scheduler.ExtraPacket.Time >= 0) {
+				HandleNewPacket(&Scheduler.ExtraPacket, Scheduler.ExtraConnection);
+			}
+			ReadPacketsInCurrentTime(InputFilePointer);
+		}
 		ChooseConnectionToOutput();
 		// todo calc packet to output
 		// todo print packet to output
@@ -34,7 +40,7 @@ void StartScheduler(char *argv[]) {
 }
 
 void ChooseConnectionToOutput() {
-	double FastestTimeToDeliverOnePacket;
+	long double FastestTimeToDeliverOnePacket;
 	bool FirstConnectionUpdate = true, ChoseConnection = false, FirstMinimumArrivalTimeUpdate = true;
 	list <ConnectionProperties> ::iterator ConnectionIterator, ChosenConnectionIterator;
 	for (ConnectionIterator = ConnectionList.begin(); ConnectionIterator != ConnectionList.end(); ++ConnectionIterator) {
@@ -64,14 +70,17 @@ void ChooseConnectionToOutput() {
 			continue;
 		}
 		if (FirstConnectionUpdate) {
-			FastestTimeToDeliverOnePacket = (double) ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight;
+			//FastestTimeToDeliverOnePacket = (double) ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight; // todo
+			FastestTimeToDeliverOnePacket = ConnectionIterator->Packets.front().Last;
 			ChosenConnectionIterator = ConnectionIterator;
 			FirstConnectionUpdate = false;
 			ChoseConnection = true;
 		}
 		else {
-			if ((ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight) < FastestTimeToDeliverOnePacket) {
-				FastestTimeToDeliverOnePacket = (double) ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight;
+			//if ((ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight) < FastestTimeToDeliverOnePacket) {
+			if (ConnectionIterator->Packets.front().Last < FastestTimeToDeliverOnePacket) {
+				//FastestTimeToDeliverOnePacket = (double) ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight; // todo
+				FastestTimeToDeliverOnePacket = ConnectionIterator->Packets.front().Last;
 				ChosenConnectionIterator = ConnectionIterator;
 			}
 		}
@@ -93,9 +102,9 @@ void ChooseConnectionToOutput() {
 	OutputFile.open("MyOutputMedium.txt", ios::app); // todo remove
 	OutputFile << Scheduler.SystemTime << ": " << ChosenPacket.InputLine << "\n"; // todo remove
 	OutputFile.close(); // todo remove
-	if (Scheduler.SystemTime == 312530) {
+	if (Scheduler.SystemTime == 313552) { // todo remove
 		int i = 1; // todo remove
-	}
+	} // todo remove
 
 
 	Scheduler.SystemTime += ChosenPacket.Length;
