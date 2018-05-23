@@ -13,6 +13,6 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Not the right amount of input arguments.\nNeed to give five.\nExiting...\n"); // first is path, other five are inputs
 		//return ERROR_CODE;
 	}
-	StartScheduler(argv); // todo check
+	HandleScheduler(argv); // todo check
 	return SUCCESS_CODE;
 }

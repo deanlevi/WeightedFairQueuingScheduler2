@@ -22,6 +22,7 @@ typedef struct _ConnectionProperties {
 	std::list<long double> Arrivals;
 	std::list<long double> Departures;
 	std::list<PacketProperties> Packets;
+	int TempDepartures;
 }ConnectionProperties;
 
 

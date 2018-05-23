@@ -15,10 +15,8 @@ typedef struct _SchedulerProperties {
 	long double RoundValue = 0;
 	PacketProperties ExtraPacket;
 	ConnectionProperties ExtraConnection;
-	long TotalDepartures = 0;
-	//int WeightedSumOfActiveLinks = 1; // todo check
-
+	long double LastOfLeftPacket;
 }SchedulerProperties;
 
 extern SchedulerProperties Scheduler;
-void StartScheduler(char *argv[]);
+void HandleScheduler(char *argv[]);

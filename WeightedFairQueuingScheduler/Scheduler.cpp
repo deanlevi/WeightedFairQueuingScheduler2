@@ -6,12 +6,30 @@
 
 using namespace std;
 
-SchedulerProperties Scheduler;
+SchedulerProperties Scheduler; // keeps needed parameters to handle the scheduler
 
-void StartScheduler(char *argv[]);
+/*
+Input: argv - to have input text file. // todo check
+Output: none.
+Description: handles the operation of the scheduler. reads from input untill have packets with time <= system time
+			 and outputs packets untill needs to read more. when finish reading outputs all left packets.
+			 has the complexity of the entire program =
+			 O((num of existing connections + total num of read packets) * num of new read packets * total num of packets)
+			 = O(total num of read packets * num of new read packets * total num of packets)
+			 =~ O(total num of packets * total num of packets) = O(total num of packets ^ 2)
+*/
+void HandleScheduler(char *argv[]);
+
+/*
+Input: none.
+Output: none.
+Description: chooses connection to output and timing it's first packet in queue by iterating over all connections and
+			 checking which one has the most recent Last parameter.
+			 has complexity of O(num of connections).
+*/
 void ChooseConnectionToOutput();
 
-void StartScheduler(char *argv[]) {
+void HandleScheduler(char *argv[]) {
 	ofstream OutputFile; // todo remove
 	OutputFile.open("MyOutputMedium.txt"); // todo remove
 	OutputFile.close(); // todo remove
@@ -24,7 +42,7 @@ void StartScheduler(char *argv[]) {
 	Scheduler.ExtraPacket.Time = -1; // mark that not valid
 	while (!Scheduler.FinishedReadingInputFile) {
 		if (Scheduler.ExtraPacket.Time <= Scheduler.SystemTime || Scheduler.NumberOfPacketsInQueue == 0) {
-			if (Scheduler.ExtraPacket.Time >= 0) {
+			if (Scheduler.ExtraPacket.Time >= 0) { // if not first read and have extra packet from last time
 				HandleNewPacket(&Scheduler.ExtraPacket, Scheduler.ExtraConnection);
 			}
 			ReadPacketsInCurrentTime(InputFilePointer);
@@ -102,7 +120,7 @@ void ChooseConnectionToOutput() {
 	OutputFile.open("MyOutputMedium.txt", ios::app); // todo remove
 	OutputFile << Scheduler.SystemTime << ": " << ChosenPacket.InputLine << "\n"; // todo remove
 	OutputFile.close(); // todo remove
-	if (Scheduler.SystemTime == 313552) { // todo remove
+	if (Scheduler.SystemTime == 356042) {//313448) { // todo remove
 		int i = 1; // todo remove
 	} // todo remove
 
