@@ -42,14 +42,12 @@ void HandleScheduler(char *argv[]) {
 	Scheduler.ExtraPacket.Time = -1; // mark that not valid
 	while (!Scheduler.FinishedReadingInputFile) {
 		if (Scheduler.ExtraPacket.Time <= Scheduler.SystemTime || Scheduler.NumberOfPacketsInQueue == 0) {
-			if (Scheduler.ExtraPacket.Time >= 0) { // if not first read and have extra packet from last time
+			if (Scheduler.ExtraPacket.Time >= 0) { // if not first read and have extra packet from last read
 				HandleNewPacket(&Scheduler.ExtraPacket, Scheduler.ExtraConnection);
 			}
 			ReadPacketsInCurrentTime(InputFilePointer);
 		}
 		ChooseConnectionToOutput();
-		// todo calc packet to output
-		// todo print packet to output
 	}
 	InputFilePointer.close();
 	while (Scheduler.NumberOfPacketsInQueue > 0) {
@@ -58,7 +56,7 @@ void HandleScheduler(char *argv[]) {
 }
 
 void ChooseConnectionToOutput() {
-	long double FastestTimeToDeliverOnePacket;
+	long double FastestTimeToDeliverOnePacket; // result of GPS simulation
 	bool FirstConnectionUpdate = true, ChoseConnection = false, FirstMinimumArrivalTimeUpdate = true;
 	list <ConnectionProperties> ::iterator ConnectionIterator, ChosenConnectionIterator;
 	for (ConnectionIterator = ConnectionList.begin(); ConnectionIterator != ConnectionList.end(); ++ConnectionIterator) {
@@ -84,7 +82,7 @@ void ChooseConnectionToOutput() {
 		}
 
 		// handle chosen connection for output
-		if (ConnectionIterator->Packets.front().Time > Scheduler.SystemTime) { // can't schedule future packets
+		if (ConnectionIterator->Packets.front().Time > Scheduler.SystemTime) { // can't schedule future packets.
 			continue;
 		}
 		if (FirstConnectionUpdate) {
@@ -120,7 +118,7 @@ void ChooseConnectionToOutput() {
 	OutputFile.open("MyOutputMedium.txt", ios::app); // todo remove
 	OutputFile << Scheduler.SystemTime << ": " << ChosenPacket.InputLine << "\n"; // todo remove
 	OutputFile.close(); // todo remove
-	if (Scheduler.SystemTime == 356042) {//313448) { // todo remove
+	if (Scheduler.SystemTime == 313552) { // todo remove
 		int i = 1; // todo remove
 	} // todo remove
 

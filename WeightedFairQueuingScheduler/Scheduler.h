@@ -5,17 +5,18 @@
 #define ERROR_CODE (int)(-1) // todo check
 
 typedef struct _SchedulerProperties {
-	long SystemTime = 0;
+	long SystemTime = 0; // current time in system
 	bool FinishedReadingInputFile = false;
 	long NumberOfPacketsInQueue = 0;
-	int MinimumArrivalTimeInQueue;
-	int NumberOfConnectionsWithPacketsWithMinimumArrivalTimeInQueue;
+	int MinimumArrivalTimeInQueue; // for updating system time
+	int NumberOfConnectionsWithPacketsWithMinimumArrivalTimeInQueue; // optimization to reduce searches of min arrival time in system
 	bool NeedToUpdateMinimumArrivalTimeInQueue = true;
-	long RoundTime = 0;
-	long double RoundValue = 0;
-	PacketProperties ExtraPacket;
-	ConnectionProperties ExtraConnection;
-	long double LastOfLeftPacket;
+	long double RoundTime = 0; // current round time
+	long double RoundValue = 0; // current round value
+	PacketProperties ExtraPacket; // extra packet when reading and exceeding system time
+	ConnectionProperties ExtraConnection; // extra connection when reading and exceeding system time
+	long double LastOfLeftPacket; // for updating round time and value
+	bool FirstUpdateOfLastOfLeftPacket; // for updating round time and value
 }SchedulerProperties;
 
 extern SchedulerProperties Scheduler;

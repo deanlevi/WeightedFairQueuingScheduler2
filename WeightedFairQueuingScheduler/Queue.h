@@ -8,9 +8,15 @@
 typedef struct _PacketProperties {
 	long Time = 0;
 	int Length;
+	int Weight;
 	std::string InputLine;
 	long double Last;
 }PacketProperties;
+
+typedef struct _ArrivalProperties {
+	long double Arrival;
+	int Weight;
+}ArrivalProperties;
 
 typedef struct _ConnectionProperties {
 	std::string SAdd;
@@ -19,7 +25,7 @@ typedef struct _ConnectionProperties {
 	long DPort;
 	int Weight = 0;
 	//bool IsLinkActive = false; // todo
-	std::list<long double> Arrivals;
+	std::list<ArrivalProperties> Arrivals;
 	std::list<long double> Departures;
 	std::list<PacketProperties> Packets;
 	int TempDepartures;
