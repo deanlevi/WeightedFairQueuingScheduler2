@@ -129,6 +129,7 @@ void ReadPacketsInCurrentTime(istream &InputFilePointer) {
 		}
 		HandleNewPacket(&NewPacket, NewConnection);
 		ParameterIndex = 0;
+		NewConnection.Weight = 0;
 	}
 	if (NewPacket.Time <= Scheduler.SystemTime) { // meaning reached end of file
 		Scheduler.FinishedReadingInputFile = true;
