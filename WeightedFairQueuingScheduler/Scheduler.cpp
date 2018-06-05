@@ -9,16 +9,16 @@ using namespace std;
 SchedulerProperties Scheduler; // keeps needed parameters to handle the scheduler
 
 /*
-Input: argv - to have input text file. // todo check
+Input: none.
 Output: none.
 Description: handles the operation of the scheduler. reads from input untill have packets with time <= system time
 			 and outputs packets untill needs to read more. when finish reading outputs all left packets.
 			 has the complexity of the entire program =
-			 O((num of existing connections + total num of read packets) * num of new read packets * total num of packets)
-			 = O(total num of read packets * num of new read packets * total num of packets)
-			 =~ O(total num of packets * total num of packets) = O(total num of packets ^ 2)
+			 O((num of existing connections + complexity of UpdateRound) * total num of packets)
+			 =~ O(total num of waiting packets per packet that we read * total num of packets)
+			 =~ O(total num of packets ^ 2)
 */
-void HandleScheduler(char *argv[]);
+void HandleScheduler();
 
 /*
 Input: none.
@@ -29,27 +29,17 @@ Description: chooses connection to output and timing it's first packet in queue 
 */
 void ChooseConnectionToOutput();
 
-void HandleScheduler(char *argv[]) {
-	ofstream OutputFile; // todo remove
-	OutputFile.open("MyOutputMedium.txt"); // todo remove
-	OutputFile.close(); // todo remove
-
-	ifstream InputFilePointer;
-	InputFilePointer.open(argv[1]); // todo check if move to Scheduler struct
-	if (!InputFilePointer.is_open()) {
-		// todo put error
-	}
+void HandleScheduler() {
 	Scheduler.ExtraPacket.Time = -1; // mark that not valid
 	while (!Scheduler.FinishedReadingInputFile) {
 		if (Scheduler.ExtraPacket.Time <= Scheduler.SystemTime || Scheduler.NumberOfPacketsInQueue == 0) {
 			if (Scheduler.ExtraPacket.Time >= 0) { // if not first read and have extra packet from last read
 				HandleNewPacket(&Scheduler.ExtraPacket, Scheduler.ExtraConnection);
 			}
-			ReadPacketsInCurrentTime(InputFilePointer);
+			ReadPacketsInCurrentTime();
 		}
 		ChooseConnectionToOutput();
 	}
-	InputFilePointer.close();
 	while (Scheduler.NumberOfPacketsInQueue > 0) {
 		ChooseConnectionToOutput();
 	}
@@ -86,16 +76,13 @@ void ChooseConnectionToOutput() {
 			continue;
 		}
 		if (FirstConnectionUpdate) {
-			//FastestTimeToDeliverOnePacket = (double) ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight; // todo
 			FastestTimeToDeliverOnePacket = ConnectionIterator->Packets.front().Last;
 			ChosenConnectionIterator = ConnectionIterator;
 			FirstConnectionUpdate = false;
 			ChoseConnection = true;
 		}
 		else {
-			//if ((ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight) < FastestTimeToDeliverOnePacket) {
 			if (ConnectionIterator->Packets.front().Last < FastestTimeToDeliverOnePacket) {
-				//FastestTimeToDeliverOnePacket = (double) ConnectionIterator->Packets.front().Length / ConnectionIterator->Weight; // todo
 				FastestTimeToDeliverOnePacket = ConnectionIterator->Packets.front().Last;
 				ChosenConnectionIterator = ConnectionIterator;
 			}
@@ -109,20 +96,8 @@ void ChooseConnectionToOutput() {
 		return;
 	}
 	PacketProperties ChosenPacket = ChosenConnectionIterator->Packets.front();
-	//cout << "Time: " << Scheduler.SystemTime << ", Sadd: " << ChosenConnectionIterator->SAdd << ", Sport: " <<
-		//ChosenConnectionIterator->SPort << ", Dadd: " << ChosenConnectionIterator->Dadd << ", Dport: " << ChosenConnectionIterator->DPort <<
-		//", Length: " << ChosenPacket.Length << "\n"; // todo check print
 	cout << Scheduler.SystemTime << ": " << ChosenPacket.InputLine << "\n";
 	
-	ofstream OutputFile; // todo remove
-	OutputFile.open("MyOutputMedium.txt", ios::app); // todo remove
-	OutputFile << Scheduler.SystemTime << ": " << ChosenPacket.InputLine << "\n"; // todo remove
-	OutputFile.close(); // todo remove
-	if (Scheduler.SystemTime == 313552) { // todo remove
-		int i = 1; // todo remove
-	} // todo remove
-
-
 	Scheduler.SystemTime += ChosenPacket.Length;
 	if (ChosenPacket.Time == Scheduler.MinimumArrivalTimeInQueue) {
 		Scheduler.NumberOfConnectionsWithPacketsWithMinimumArrivalTimeInQueue -= 1;

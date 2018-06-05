@@ -24,15 +24,15 @@ typedef struct _ConnectionProperties {
 	std::string Dadd;
 	long DPort;
 	int Weight = 0;
-	//bool IsLinkActive = false; // todo
 	std::list<ArrivalProperties> Arrivals;
 	std::list<long double> Departures;
 	std::list<PacketProperties> Packets;
 	int TempDepartures;
+	long double LastOfLastPacketInConnection = 0;
 }ConnectionProperties;
 
 
 extern std::list<ConnectionProperties> ConnectionList;
 
-void ReadPacketsInCurrentTime(std::istream &InputFilePointer);
+void ReadPacketsInCurrentTime();
 void HandleNewPacket(PacketProperties *NewPacket, ConnectionProperties NewConnection);

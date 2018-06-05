@@ -2,7 +2,7 @@
 
 #include "Queue.h"
 
-#define ERROR_CODE (int)(-1) // todo check
+#define ERROR_CODE (int)(-1)
 
 typedef struct _SchedulerProperties {
 	long SystemTime = 0; // current time in system
@@ -15,9 +15,9 @@ typedef struct _SchedulerProperties {
 	long double RoundValue = 0; // current round value
 	PacketProperties ExtraPacket; // extra packet when reading and exceeding system time
 	ConnectionProperties ExtraConnection; // extra connection when reading and exceeding system time
-	long double LastOfLeftPacket; // for updating round time and value
-	bool FirstUpdateOfLastOfLeftPacket; // for updating round time and value
+	long double LastOfLeftPacket; // for updating round time and value when a packet has left
+	bool FirstUpdateOfLastOfLeftPacket; // for updating round time and value when a packet has left
 }SchedulerProperties;
 
 extern SchedulerProperties Scheduler;
-void HandleScheduler(char *argv[]);
+void HandleScheduler();
